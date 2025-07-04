@@ -5,20 +5,23 @@ from flask import Flask
 from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
+# Environment variable
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+PORT = int(os.environ.get("PORT", 10000))
+HOST = os.environ.get("HOST", "0.0.0.0")
 
-# Load NSE/BSE data from CSV (assumes preloaded CSV file in project directory)
+# Load local NSE/BSE data from CSV file
 try:
     stock_data = pd.read_csv("nse_bse_data.csv")
 except:
     stock_data = pd.DataFrame()
 
-# Define Telegram bot commands
+# Telegram Bot Function
 def run_telegram_bot():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        await update.message.reply_text("\ud83d\ude4f जय श्री राम! मैं Panditji Bot हूँ। आपका स्वागत है \ud83d\udd71")
+        await update.message.reply_text("🙏 जय श्री राम! मैं Panditji Bot हूँ। आपका स्वागत है 🕉")
 
     async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         help_text = (
@@ -38,20 +41,6 @@ def run_telegram_bot():
         )
         await update.message.reply_text(help_text, parse_mode="Markdown")
 
-    async def details(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        args = context.args
-        if not args:
-            await update.message.reply_text("⚠️ कृपया स्टॉक का नाम दें, जैसे `/details INFY`")
-            return
-        symbol = args[0].upper()
-        try:
-            row = stock_data[stock_data['SYMBOL'].str.upper() == symbol].iloc[0]
-            response = f"📋 *{symbol}* Details:\n- Company: {row['NAME']}\n- Sector: {row['SECTOR']}\n- Market Cap: ₹{row['MARKET_CAP']} Cr\n- EPS: ₹{row['EPS']}\n- PE: {row['PE_RATIO']}\n- Face Value: ₹{row['FACE_VALUE']}"
-        except:
-            response = "❌ डेटा उपलब्ध नहीं है या SYMBOL गलत है।"
-        await update.message.reply_text(response, parse_mode="Markdown")
-
-    # Existing command definitions (unchanged)...
     async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("📰 आज की मार्केट न्यूज:\n- सेंसेक्स और निफ्टी में मजबूती।\n- FII निवेश बढ़ा।\n- IT सेक्टर में हलचल।")
 
@@ -105,7 +94,20 @@ def run_telegram_bot():
     async def livemarket(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("📡 लाइव मार्केट अपडेट:\n- NIFTY: 19,876.45 (+0.56%)\n- BANKNIFTY: 45,230.20 (+0.74%)\n- INDIA VIX: 12.14")
 
-    # Add all command handlers
+    async def details(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        args = context.args
+        if not args:
+            await update.message.reply_text("⚠️ कृपया स्टॉक का नाम दें, जैसे `/details INFY`")
+            return
+        symbol = args[0].upper()
+        try:
+            row = stock_data[stock_data['SYMBOL'].str.upper() == symbol].iloc[0]
+            response = f"📋 *{symbol}* Details:\n- Company: {row['NAME']}\n- Sector: {row['SECTOR']}\n- Market Cap: ₹{row['MARKET_CAP']} Cr\n- EPS: ₹{row['EPS']}\n- PE: {row['PE_RATIO']}\n- Face Value: ₹{row['FACE_VALUE']}"
+        except:
+            response = "❌ डेटा उपलब्ध नहीं है या SYMBOL गलत है।"
+        await update.message.reply_text(response, parse_mode="Markdown")
+
+    # Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("news", news))
@@ -121,13 +123,13 @@ def run_telegram_bot():
 
     app.run_polling()
 
-# Flask app for Render to bind to a port
+# Flask app for Render
 web_app = Flask(__name__)
 
 @web_app.route('/')
 def home():
-    return "\u2705 Panditji Bot is running on Render!"
+    return "✅ Panditji Bot is running on Render!"
 
 if __name__ == '__main__':
     threading.Thread(target=run_telegram_bot).start()
-    web_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
+    web_app.run(host=HOST, port=PORT)
