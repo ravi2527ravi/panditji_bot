@@ -1,3 +1,11 @@
-git add requirements.txt
-git commit -m "✅ Added Flask support"
-git push origin main
+flask
+python-telegram-bot==20.6
+pandas
+numpy
+opencv-python
+httpx
+certifi
+python-dateutil
+anyio
+sniffio
+six
