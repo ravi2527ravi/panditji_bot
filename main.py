@@ -9,7 +9,6 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Messa
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 PORT = int(os.environ.get("PORT", 10000))
 HOST = os.environ.get("HOST", "0.0.0.0")
-
 # Load local NSE/BSE data from CSV file
 try:
     stock_data = pd.read_csv("nse_bse_data.csv")
